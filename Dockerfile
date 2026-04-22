@@ -1,15 +1,15 @@
-# Use Java 17
-FROM eclipse-temurin:17-jdk
+# ---- Build stage ----
+FROM maven:3.9.9-eclipse-temurin-17 AS build
 
-# Set working directory
 WORKDIR /app
-
-# Copy backend files
 COPY backend /app
 
-# Build app
-RUN chmod +x mvnw || true
-RUN ./mvnw clean package -DskipTests || mvn clean package -DskipTests
+RUN mvn clean package -DskipTests
 
-# Run app
-CMD ["java", "-jar", "target/tracker-1.0.0.jar"]
+# ---- Run stage ----
+FROM eclipse-temurin:17-jdk
+
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+
+CMD ["java", "-jar", "app.jar"]
